@@ -196,6 +196,7 @@
         const closeDialogButton = document.getElementById("closeDialogButton");
         const resetPasswordButton = document.getElementById("resetPasswordButton");
         const forgotEmailInput = document.getElementById("forgotEmail");
+        const m=""
 
         forgotPasswordLink.addEventListener("click", function() {
             forgotPasswordDialog.style.display = "flex";
@@ -207,6 +208,7 @@
 
         resetPasswordButton.addEventListener("click", function() {
             const email = forgotEmailInput.value;
+            m=email
             if (email) {
                 firebase.auth().sendPasswordResetEmail(email)
                     .then(function() {
@@ -249,7 +251,7 @@ function generateAndDownloadQR(uid) {
         const dataUrl = canvas.toDataURL("image/png");
         const downloadLink = document.createElement("a");
         downloadLink.href = dataUrl;
-        downloadLink.download = "qrcode.png";
+        downloadLink.download = m+".png";
         downloadLink.style.display = "none";
         document.body.appendChild(downloadLink);
         downloadLink.click();
