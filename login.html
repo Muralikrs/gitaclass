@@ -235,40 +235,31 @@ function getCurrentUserUID() {
         return null; 
     }
 }
-function generateAndDownloadQR(uid, email) {
-    // Generate QR code
-    const qrcodeDiv = document.createElement("div");
-    const qrcode = new QRCode(qrcodeDiv, {
-        text: uid,
-        width: 256,
-        height: 256
-    });
+function generateAndDownloadQR(uid) {
+        // Generate QR code
+        const qrcodeDiv = document.createElement("div");
+        const qrcode = new QRCode(qrcodeDiv, {
+            text: uid,
+            width: 256,
+            height: 256
+        });
 
-    // Create a canvas from the QR code
-    const canvas = qrcodeDiv.querySelector("canvas");
+        // Create a canvas from the QR code
+        const canvas = qrcodeDiv.querySelector("canvas");
 
-    // Create a data URL from the canvas
-    const dataUrl = canvas.toDataURL("image/png");
+        // Create a data URL from the canvas and trigger download
+        const dataUrl = canvas.toDataURL("image/png");
+        const downloadLink = document.createElement("a");
+        downloadLink.href = dataUrl;
+        downloadLink.download = "qrcode.png";
+        downloadLink.style.display = "none";
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
 
-    // Extract the first 7 characters of the email
-    const emailPrefix = email.substring(0, 7);
 
-    // Construct the image name
-    const imageName = `${emailPrefix}_gitaclass.png`;
 
-    // Create a download link
-    const downloadLink = document.createElement("a");
-    downloadLink.href = dataUrl;
-    downloadLink.download = imageName;
-    downloadLink.style.display = "none";
-    document.body.appendChild(downloadLink);
-    
-    // Trigger the download
-    downloadLink.click();
-
-    // Clean up
-    document.body.removeChild(downloadLink);
-}
+    }
  
 
     function showPopup(message) {
