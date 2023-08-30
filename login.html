@@ -63,6 +63,13 @@
             justify-content: center;
             align-items: center;
         }
+        .popup-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
 
         .dialog-box {
             background-color: white;
@@ -135,13 +142,38 @@
             <button id="closeDialogButton">Close</button>
         </div>
     </div>
-    <div class="popup-container" id="popup">
+    <div class="popup-container" id="popupButtonsContainer" style="display: none;">
         <div class="popup-box">
-            <div class="popup-header">
-                <p>Hare bol! Your unique QR code has been downloaded.</p>
+            <div class="popup-buttons">
+                <button id="showQRButton">Show QR</button>
+                <button id="downloadQRButton">Download QR</button>
+                <button id="updateDataButton">Update Data</button>
             </div>
+            <button id="closePopupButton">Close</button>
         </div>
     </div>
+    <div class="popup-container" id="showQRPopup" style="display: none;">
+        <div class="popup-box">
+            <div class="popup-header">
+                <h2>Show QR Code</h2>
+                <button id="closeQRPopupButton">Close</button>
+            </div>
+            <div class="popup-content" id="qrCodeDisplay"></div>
+        </div>
+    </div>
+
+    <div class="popup-container" id="updatePopupContainer" style="display: none;">
+        <div class="popup-box">
+            <h2>Update WhatsApp Number</h2>
+            <label for="newWhatsAppNumber">New WhatsApp Number:</label>
+            <input type="text" id="newWhatsAppNumber" placeholder="Enter new number">
+            <button id="confirmUpdateButton">Update</button>
+            <button id="cancelUpdateButton">Cancel</button>
+        </div>
+    </div>
+    
+    
+    
     
     <!-- Include Firebase SDKs -->
     <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
@@ -166,6 +198,8 @@
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);        
         const loginForm = document.querySelector(".login-form");
+        const email = document.querySelector("#email").value;
+
 
         loginForm.addEventListener("submit", function(e) {
             e.preventDefault();
@@ -176,8 +210,8 @@
             firebase.auth().signInWithEmailAndPassword(email, password)
                 .then(function(userCredential) {
                    
-                    generateAndDownloadQR(getCurrentUserUID(),email)
-                    showPopup("Hare bol! Your unique QR code has been downloaded.");
+                    popupButtonsContainer.style.display = "flex";
+            loginForm.reset();
                     loginForm.reset()
 
                 })
@@ -230,32 +264,25 @@ function getCurrentUserUID() {
         return null; 
     }
 }
+
+
 function generateAndDownloadQR(uid,mail) {
-        // Generate QR code
         const qrcodeDiv = document.createElement("div");
         const qrcode = new QRCode(qrcodeDiv, {
             text: uid,
             width: 256,
             height: 256
         });
-
-        // Create a canvas from the QR code
         const canvas = qrcodeDiv.querySelector("canvas");
-
-        // Create a data URL from the canvas and trigger download
         const dataUrl = canvas.toDataURL("image/png");
         const downloadLink = document.createElement("a");
         downloadLink.href = dataUrl;
-        downloadLink.download = mail+".png";
+        downloadLink.download = "ofline Gita QR.png";
         downloadLink.style.display = "none";
         document.body.appendChild(downloadLink);
         downloadLink.click();
         document.body.removeChild(downloadLink);
-
-
-
     }
-
     function showPopup(message) {
     const popup = document.getElementById("popup");
     const popupHeader = document.querySelector(".popup-header p");
@@ -277,11 +304,71 @@ function outsideClickHandler(event) {
                 hidePopup();
             }
         }
+        
+// Handle button clicks
+
+downloadQRButton.addEventListener("click", function() {
+    generateAndDownloadQR(getCurrentUserUID(),email)
+});
+
+updateDataButton.addEventListener("click", function() {
+        document.querySelector("#updatePopupContainer").style.display = "flex";
+    });
+
+    confirmUpdateButton.addEventListener("click", function() {
+        const newWhatsAppNumber = document.querySelector("#newWhatsAppNumber").value;
+        if (newWhatsAppNumber) {
+            const uid = getCurrentUserUID();
+            if (uid) {
+                const userRef = firebase.database().ref("users").child(uid);
+                userRef.update({ whatsappNumber: newWhatsAppNumber })
+                    .then(function() {
+                        alert("WhatsApp number updated successfully!");
+                        document.querySelector("#updatePopupContainer").style.display = "none";
+                    })
+                    .catch(function(error) {
+                        alert("An error occurred while updating WhatsApp number: " + error.message);
+                    });
+            }
+        }
+    });
+closePopupButton.addEventListener("click", function() {
+    // Close the popup
+    popupButtonsContainer.style.display = "none";
+});
+showQRButton.addEventListener("click", function() {
+        const uid = getCurrentUserUID();
+        
+        // Generate and display QR code
+        generateAndDisplayQR(uid);
+
+        // Display the QR code popup
+        showQRPopup.style.display = "flex";
+    });
+
+    function generateAndDisplayQR(uid) {
+        const qrCodeDisplay = document.getElementById("qrCodeDisplay");
+        
+        // Generate QR code
+        const qrCodeDiv = document.createElement("div");
+        const qrcode = new QRCode(qrCodeDiv, {
+            text: uid,
+            width: 256,
+            height: 256
+        });
+
+        qrCodeDisplay.innerHTML = "";
+        qrCodeDisplay.appendChild(qrCodeDiv);
+    }
+
+    closeQRPopupButton.addEventListener("click", function() {
+        showQRPopup.style.display = "none";
+    });
+
+
     </script>
 </body>
 </html>
 
         
-    </script>
-</body>
-</html>
+    
